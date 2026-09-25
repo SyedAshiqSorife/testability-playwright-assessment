@@ -1,0 +1,6 @@
+node_modules/
+reports/
+test-results/
+.auth/
+package-lock.json
+.pytest_cache/

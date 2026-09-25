@@ -1,4 +1,5 @@
 import type { Locator, Page, Response } from '@playwright/test';
+import { ApiResponse } from '../api/endpoints';
 import type { UserSettings } from '../api/types';
 import { BasePage } from './BasePage';
 
@@ -10,7 +11,6 @@ export class SettingsPage extends BasePage {
   readonly emailInput: Locator;
   readonly passwordInput: Locator;
   readonly updateButton: Locator;
-  readonly logoutButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -22,7 +22,6 @@ export class SettingsPage extends BasePage {
     this.emailInput = root.getByPlaceholder('Email');
     this.passwordInput = root.getByPlaceholder(/new password/i);
     this.updateButton = root.getByRole('button', { name: /update settings/i });
-    this.logoutButton = root.getByRole('button', { name: /logout/i });
   }
 
   async open(): Promise<void> {
@@ -40,7 +39,7 @@ export class SettingsPage extends BasePage {
   /** Submits the form and resolves with the `PUT /user` API response. */
   async submit(): Promise<Response> {
     const [response] = await Promise.all([
-      this.page.waitForResponse((r) => r.url().endsWith('/api/user') && r.request().method() === 'PUT'),
+      this.page.waitForResponse(ApiResponse.updateUser),
       this.updateButton.click(),
     ]);
     return response;

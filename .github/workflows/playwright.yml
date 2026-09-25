@@ -18,8 +18,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  static-checks:
+    name: Type-check, lint, format
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+
   test:
     name: ${{ matrix.browser }}
+    needs: static-checks
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -38,9 +54,6 @@ jobs:
 
       - run: npm ci
 
-      - name: Type-check
-        run: npm run typecheck
-
       # The `setup` project (UI login, auth.setup.ts) always runs on Chromium,
       # so every job needs it in addition to the browser under test.
       - name: Install ${{ matrix.browser }} (+ chromium for auth setup)
@@ -49,7 +62,7 @@ jobs:
       - name: Run tests
         run: npx playwright test --project=${{ matrix.browser }} ${{ github.event.inputs.grep && format('--grep "{0}"', github.event.inputs.grep) || '' }}
 
-      - name: Upload HTML report
+      - name: Upload HTML report (includes traces of failures)
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
@@ -82,10 +95,10 @@ jobs:
           annotate_only: true
           detailed_summary: true
 
-  allure-report:
-    name: Combined Allure report
+  reports:
+    name: Build combined reports
     needs: test
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && needs.test.result != 'skipped' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -109,12 +122,60 @@ jobs:
           path: reports/allure-results
           merge-multiple: true
 
-      - name: Generate report
+      - name: Download Playwright HTML reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: html-report-*
+          path: reports/html-reports
+
+      - name: Generate Allure report
         run: npm run allure:generate
 
-      - name: Upload Allure report
+      # Site layout: / = combined Allure report, /playwright/<browser>/ = Playwright HTML report.
+      - name: Assemble report site
+        run: |
+          mkdir -p site/playwright
+          cp -r reports/allure-report/. site/
+          for dir in reports/html-reports/html-report-*; do
+            cp -r "$dir" "site/playwright/${dir##*/html-report-}"
+          done
+
+      - name: Upload combined reports
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report
-          path: reports/allure-report
+          name: combined-reports
+          path: site
           retention-days: 30
+
+      - name: Upload GitHub Pages artifact
+        if: ${{ github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  # Requires: repo Settings → Pages → Build and deployment → Source: "GitHub Actions".
+  deploy-reports:
+    name: Publish reports to GitHub Pages
+    needs: reports
+    if: ${{ !cancelled() && needs.reports.result == 'success' && github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Link reports in the run summary
+        run: |
+          {
+            echo "### Test reports"
+            echo "- Allure (all browsers): ${{ steps.deployment.outputs.page_url }}"
+            for b in chromium firefox webkit; do
+              echo "- Playwright HTML ($b): ${{ steps.deployment.outputs.page_url }}playwright/$b/"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"

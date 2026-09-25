@@ -11,9 +11,10 @@ if (process.env.FAKER_SEED) faker.seed(Number(process.env.FAKER_SEED));
 export const uniqueId = (): string => `${Date.now().toString(36)}${faker.string.alphanumeric(4).toLowerCase()}`;
 
 const cap = (text: string, max: number) => text.slice(0, max).trim();
+const lettersOnly = (text: string) => text.toLowerCase().replace(/[^a-z]/g, '');
 
 export function buildTag(): string {
-  return `${faker.word.noun().toLowerCase().replace(/[^a-z]/g, '')}-${faker.string.alphanumeric(5).toLowerCase()}`;
+  return `${lettersOnly(faker.word.noun())}-${faker.string.alphanumeric(5).toLowerCase()}`;
 }
 
 export function buildArticle(overrides: Partial<ArticleInput> = {}): ArticleInput {
@@ -34,7 +35,7 @@ const MAX_USERNAME_LENGTH = 20;
 
 export function buildUser(): NewUser {
   const id = uniqueId();
-  const first = faker.person.firstName().toLowerCase().replace(/[^a-z]/g, '');
+  const first = lettersOnly(faker.person.firstName());
   return {
     // Truncate the name, never the unique suffix.
     username: `${first.slice(0, MAX_USERNAME_LENGTH - id.length)}${id}`,

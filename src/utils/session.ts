@@ -18,6 +18,9 @@ type StorageState = {
   origins: { origin: string; localStorage: { name: string; value: string }[] }[];
 };
 
+/** An empty storage state: use with `test.use({ storageState: signedOut })` for anonymous tests. */
+export const signedOut: StorageState = { cookies: [], origins: [] };
+
 /** Builds an in-memory storage state so a context starts already signed in as `token`'s owner. */
 export function storageStateFor(token: string): StorageState {
   return {
@@ -34,9 +37,7 @@ export function saveSessionUser(user: SessionUser): void {
 export function readSessionUser(): SessionUser {
   const user = JSON.parse(fs.readFileSync(SESSION_USER, 'utf-8')) as SessionUser;
   const state = JSON.parse(fs.readFileSync(STORAGE_STATE, 'utf-8')) as StorageState;
-  const token = state.origins
-    .flatMap((o) => o.localStorage)
-    .find((item) => item.name === JWT_STORAGE_KEY)?.value;
+  const token = state.origins.flatMap((o) => o.localStorage).find((item) => item.name === JWT_STORAGE_KEY)?.value;
   if (!token) throw new Error(`No ${JWT_STORAGE_KEY} in ${STORAGE_STATE}; did the setup project run?`);
   return { ...user, token };
 }
