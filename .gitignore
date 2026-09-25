@@ -1,0 +1,10 @@
+node_modules/
+.env
+# Authenticated session state (contains a JWT for the throwaway test user)
+.auth/
+test-results/
+reports/
+playwright-report/
+blob-report/
+allure-results/
+allure-report/

@@ -1,0 +1,33 @@
+{
+  "name": "conduit-playwright-assessment",
+  "version": "1.0.0",
+  "description": "Playwright + TypeScript E2E framework for the Conduit app (https://conduit.bondaracademy.com)",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit",
+    "test:headed": "playwright test --project=chromium --headed",
+    "test:positive": "playwright test --grep @positive",
+    "test:negative": "playwright test --grep @negative",
+    "test:ui": "playwright test --ui",
+    "typecheck": "tsc --noEmit",
+    "report": "playwright show-report reports/html",
+    "allure:generate": "allure generate reports/allure-results --clean -o reports/allure-report",
+    "allure:open": "allure open reports/allure-report"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "@faker-js/faker": "^10.6.0",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.6.2",
+    "allure-commandline": "^2.46.1",
+    "allure-playwright": "^3.12.2",
+    "dotenv": "^18.0.3",
+    "typescript": "^7.0.2"
+  }
+}
