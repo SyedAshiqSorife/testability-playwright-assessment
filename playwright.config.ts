@@ -35,7 +35,8 @@ export default defineConfig({
 
   projects: [
     // Logs in once through the UI and persists the session for every browser project.
-    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    // Pinned to Chromium: the saved localStorage session works in every browser.
+    { name: 'setup', testMatch: /.*\.setup\.ts/, use: { ...devices['Desktop Chrome'] } },
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'], storageState: STORAGE_STATE },

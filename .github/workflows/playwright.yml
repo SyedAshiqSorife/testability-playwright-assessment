@@ -41,8 +41,10 @@ jobs:
       - name: Type-check
         run: npm run typecheck
 
-      - name: Install ${{ matrix.browser }}
-        run: npx playwright install --with-deps ${{ matrix.browser }}
+      # The `setup` project (UI login, auth.setup.ts) always runs on Chromium,
+      # so every job needs it in addition to the browser under test.
+      - name: Install ${{ matrix.browser }} (+ chromium for auth setup)
+        run: npx playwright install --with-deps chromium ${{ matrix.browser }}
 
       - name: Run tests
         run: npx playwright test --project=${{ matrix.browser }} ${{ github.event.inputs.grep && format('--grep "{0}"', github.event.inputs.grep) || '' }}
