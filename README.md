@@ -94,9 +94,9 @@ Locators that depend on test data are methods, e.g. `tagPill(tag)`, `popularTag(
 
 - Allure, all browsers: `https://syedashiqsorife.github.io/testability-playwright-assessment/`
 - Playwright HTML, one per browser, with traces viewable in the browser:
-  -- Playwright HTML (chromium): `https://syedashiqsorife.github.io/testability-playwright-assessment/playwright/chromium/`
-  -- Playwright HTML (firefox): `https://syedashiqsorife.github.io/testability-playwright-assessment/playwright/firefox/`
-  -- Playwright HTML (webkit): `https://syedashiqsorife.github.io/testability-playwright-assessment/playwright/webkit/`
+  - Playwright HTML (chromium): `https://syedashiqsorife.github.io/testability-playwright-assessment/playwright/chromium/`
+  - Playwright HTML (firefox): `https://syedashiqsorife.github.io/testability-playwright-assessment/playwright/firefox/`
+  - Playwright HTML (webkit): `https://syedashiqsorife.github.io/testability-playwright-assessment/playwright/webkit/`
 
 ## CI/CD (GitHub Actions)
 
